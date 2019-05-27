@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+>
+    <ImageView
+            android:layout_width="72dp"
+            android:layout_height="fill_parent"
+            app:srcCompat="@color/design_default_color_primary"
+            android:id="@+id/imageView"
+            android:layout_weight="1"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/media_preview_image_default_content_description"/>
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2">
+        <TextView
+                android:text="@string/media_title_loading_placeholder"
+                android:singleLine="false"
+                android:maxLines="2"
+                android:ellipsize="middle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/titleTextView"
+                android:layout_weight="2"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                android:layout_marginBottom="4dp"
+                tools:ignore="NestedWeights"/>
+        <TextView
+                android:text="@string/media_tidbit_loading_placeholder"
+                android:singleLine="true"
+                android:ellipsize="middle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/tidbitTextView"
+                android:layout_weight="0"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small"/>
+    </LinearLayout>
+</LinearLayout>
