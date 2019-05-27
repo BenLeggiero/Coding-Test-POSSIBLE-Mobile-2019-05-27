@@ -1,15 +1,25 @@
 package org.bh.codingtest.possiblemobile.v2019_05_27
 
+import android.os.AsyncTask
 import android.os.Bundle
-import android.support.design.widget.Snackbar
+import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.view.Menu
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.util.JsonReader
+import android.view.*
+import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.activity_scrolling.*
 import kotlinx.android.synthetic.main.content_scrolling.*
+import kotlinx.android.synthetic.main.media_row_view.view.*
+import org.bh.codingtest.possiblemobile.v2019_05_27.mediaRow.MediaItemJson
+import org.bh.codingtest.possiblemobile.v2019_05_27.utilities.loadAsImage
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.net.URL
+import android.content.Intent
+import android.net.Uri
+
 
 class ScrollingActivity : AppCompatActivity() {
 
@@ -18,10 +28,17 @@ class ScrollingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_scrolling)
         setSupportActionBar(toolbar)
         fab.setOnClickListener {
-            // TODO: Anything for the FAB?
+            val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://BenLeggiero.me"))
+            startActivity(browserIntent)
         }
 
-        media_items_recycler_view.startLoadingBooks()
+        AsyncTask.execute {
+            val items =
+                parseItemsFromJsonOnThisThread(URL(getString(R.string.booksJsonUrl)).openStream())
+            runOnUiThread {
+                media_items_recycler_view.displayMedia(items)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -42,22 +59,73 @@ class ScrollingActivity : AppCompatActivity() {
     }
 
 
-    private fun RecyclerView.startLoadingBooks() {
+    private fun parseItemsFromJsonOnThisThread(jsonStream: InputStream): List<MediaItemJson> {
+        val jsonReader = JsonReader(InputStreamReader(jsonStream))
 
-        class BookLoadingAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-            override fun onCreateViewHolder(p0: ViewGroup, p1: Int): RecyclerView.ViewHolder {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val items = mutableListOf<MediaItemJson>()
+
+        jsonReader.beginArray()
+
+        while (jsonReader.hasNext()) {
+            MediaItemJson(jsonReader)?.let(items::add)
+        }
+
+        jsonReader.endArray()
+
+        return items
+    }
+
+
+    private fun RecyclerView.displayMedia(items: List<MediaItemJson>) {
+
+        class MediaLoadingAdapter(var allMediaItems: List<MediaItemJson>) :
+            RecyclerView.Adapter<MediaLoadingAdapter.MediaViewHolder>() {
+
+            inner class MediaViewHolder(val mediaRowView: LinearLayout) :
+                RecyclerView.ViewHolder(mediaRowView)
+
+
+            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaViewHolder {
+
+                val mediaRowView = LayoutInflater
+                    .from(parent.context)
+                    .inflate(R.layout.media_row_view, parent, false)
+                        as LinearLayout
+
+                val holder = MediaViewHolder(mediaRowView)
+//                holder.setIsRecyclable(true)
+                return holder
             }
 
             override fun getItemCount(): Int {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+                return 200//allMediaItems.count()
             }
 
-            override fun onBindViewHolder(p0: RecyclerView.ViewHolder, p1: Int) {
-                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            override fun onBindViewHolder(holder: MediaViewHolder, position: Int) {
+//                holder.setIsRecyclable(true)
+
+                val currentItem = allMediaItems.getOrNull(position) ?: return
+
+                holder.mediaRowView.titleTextView?.text = currentItem.title
+
+                holder.mediaRowView.tidbitTextView?.text =
+                    currentItem.author?.let { "Author: $it" }
+                        ?: context.getString(R.string.defaultMediaTidbit)
+
+                holder.mediaRowView.mediaThumbnailView?.let { imageView ->
+                    AsyncTask.execute {
+                        currentItem.imageUrl?.loadAsImage()?.let { imageDrawable ->
+                            runOnUiThread {
+                                imageView.setImageDrawable(imageDrawable)
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        this.adapter = BookLoadingAdapter()
+        this.setHasFixedSize(true)
+        this.layoutManager = LinearLayoutManager(this@ScrollingActivity)
+        this.adapter = MediaLoadingAdapter(items)
     }
 }

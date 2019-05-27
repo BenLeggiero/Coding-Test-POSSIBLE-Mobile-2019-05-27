@@ -4,4 +4,7 @@
     <string name="media_preview_image_default_content_description">Media preview image</string>
     <string name="media_title_loading_placeholder">Loading…</string>
     <string name="media_tidbit_loading_placeholder">Please wait</string>
+    <string name="defaultMediaTitle">Untitled</string>
+    <string name="defaultMediaTidbit"/>
+    <string name="booksJsonUrl">https://de-coding-test.s3.amazonaws.com/books.json</string>
 </resources>
